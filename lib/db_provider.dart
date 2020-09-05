@@ -52,7 +52,7 @@ class DBProvider {
       return AllData(
         id: maps[i]['id'],
         head: maps[i]['head'],
-        firstDate: maps[i]['firstData'],
+        firstDate: maps[i]['firstDate'],
         belongs: maps[i]['belongs'],
         groupName: maps[i]['groupName'],
         represent: maps[i]['represent'],

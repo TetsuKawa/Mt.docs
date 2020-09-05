@@ -972,7 +972,7 @@ class ContentsLabel {
   static const String joinOther = "その他共同装備";
 
   static const Map<String,String> hintLabelMap = {
-    file : "2021/1/1 〇〇登山",
+    file : "2021-1-1 〇〇登山",
     head : "〇〇市役所／警察署",
     belongs : "〇〇連盟／□□学校登山部",
     groupName : "〇〇チーム／△△隊",
