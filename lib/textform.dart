@@ -362,7 +362,7 @@ class AllData{
       case ContentsLabel.localPoint3:{
         localPoint3 = text;
       }break;
-      case ContentsLabel.localPoint3:{
+      case ContentsLabel.localTel3:{
         localTel3 = text;
       }break;
       case ContentsLabel.id1Role:{
