@@ -1,11 +1,10 @@
 import 'dart:typed_data';
-
-import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:share/share.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:mtdocs/textform.dart';
-
 import 'add_pdf_page.dart';
 import 'db_provider.dart';
 
@@ -25,7 +24,6 @@ class PdfViewPage extends StatefulWidget {
 class _PdfViewPageState extends State<PdfViewPage> {
   AllData emp = AllData();
   List<AllData> dataList;
-  var _usStates = ["削除"];
 
   List<Widget> actionWidget(int index){
     if(index == 1){
@@ -54,13 +52,15 @@ class _PdfViewPageState extends State<PdfViewPage> {
             if(widget.data.file == ""){
               widget.data.file = "notitle";
             }
-            Uint8List _buffer = await File(widget.filePath).readAsBytes();
-            Share.file(
-                "計画書ファイルを共有",
-                "${widget.data.file}.pdf",
-                _buffer,
-                "image/pdf"
-            );
+//            final ByteData bytes = await rootBundle.load(widget.filePath);
+////            Uint8List _buffer = await File(widget.filePath).readAsBytes();
+//            Share.file(
+//                "計画書ファイルを共有",
+//                "${widget.filePath}",
+//                bytes.buffer.asUint8List(),
+//                "image/pdf"
+//            );
+            Share.shareFiles([widget.filePath], text: 'aaa',subject: 'bbb');
           },
         ),
 
@@ -117,6 +117,9 @@ class _PdfViewPageState extends State<PdfViewPage> {
                 widget.data.path = await FileController.saveLocalImage(widget.image,widget.data.id.toString());
               }
             }
+            else{
+              widget.data.path = null;
+            }
             await DBProvider.updateFileData(widget.data, widget.id);
             while(Navigator.canPop(context)) {
               Navigator.of(context).pop();
@@ -132,7 +135,7 @@ class _PdfViewPageState extends State<PdfViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: widget.data.file == null ?  Text("No title") : Text(widget.data.file),
+        title: widget.data.file == "" ?  Text("No title") : Text(widget.data.file),
         actions: actionWidget(widget.isNew),
       ),
       body: PDFView(

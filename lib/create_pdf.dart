@@ -16,7 +16,6 @@ class CreatePdf{
 
       return Font.ttf(fontData.buffer.asByteData());
     }
-    DateTime now = DateTime.now();
     var font = await getFontData();
 
     if(allData.firstAddress1==null) allData.firstAddress1 = "";
@@ -40,6 +39,7 @@ class CreatePdf{
     if(allData.id5Address1==null) allData.id5Address1 = "";
     if(allData.id5Address2==null) allData.id5Address2 = "";
     if(allData.id5Address3==null) allData.id5Address3 = "";
+
 
     Widget checkItem(bool check, String item,double num){
       return Row(
@@ -117,7 +117,7 @@ class CreatePdf{
                       margin: const EdgeInsets.only(bottom: 0 * PdfPageFormat.mm),
                       width: 125,
                       height: 15,
-                      child: Center(child: nameH == null ? Text("") : Text(nameH, style: TextStyle(font: font,fontSize: 10)),),
+                      child: Center(child: nameH == null ? Text("") : Text(nameH, style: TextStyle(font: font,fontSize: 7)),),
                       decoration: const BoxDecoration(
                           border:
                           BoxBorder(bottom: false ,top: true,right: true,left: true, width: 0.5, color: PdfColors.black))),
@@ -125,7 +125,7 @@ class CreatePdf{
                       margin: const EdgeInsets.only(bottom: 0 * PdfPageFormat.mm),
                       width: 125,
                       height: 30,
-                      child: Center(child: name == null ? Text("") : Text(name, style: TextStyle(font: font,fontSize: 20)),),
+                      child: Center(child: name == null ? Text("") : Text(name, style: TextStyle(font: font,fontSize: 15)),),
                       decoration: const BoxDecoration(
                           border:
                           BoxBorder(bottom: true ,top: false,right: true,left: true, width: 0.5, color: PdfColors.black))),
@@ -920,7 +920,8 @@ class CreatePdf{
                   margin: const EdgeInsets.only(bottom: 0 * PdfPageFormat.mm),
                   width: 535,
                   height: 350,
-                  child: isNew == 1 ? (image == null ? Container() : Image(PdfImage.file(
+                  child:
+                  isNew == 1 ? (image == null ? Container() : Image(PdfImage.file(
                       pdf.document,
                       bytes: image.readAsBytesSync()),
                       width: 530,height: 340
@@ -1230,9 +1231,14 @@ class CreatePdf{
     );
 
 
+
+
     Directory _temporaryDirectory = await getTemporaryDirectory();
     String temporaryDirectoryPath = _temporaryDirectory.path;
-    String _filePath = '$temporaryDirectoryPath/resume.pdf';
+    String _filePath;
+
+    if(allData.file == "")  _filePath = '$temporaryDirectoryPath/notitle.pdf';
+    else _filePath  = '$temporaryDirectoryPath/${allData.file}.pdf';
 
     List<int> _pdfSaveData = pdf.save();
     File _file = File(_filePath);

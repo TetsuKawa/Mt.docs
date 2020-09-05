@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -11,7 +12,30 @@ import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'create_pdf.dart';
 import 'db_provider.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
+//double _kPickerSheetHeight = 216.0;
+//Widget _buildBottomPicker(Widget picker) {
+//  return Container(
+//    height: _kPickerSheetHeight,
+//    padding: const EdgeInsets.only(top: 6.0),
+//    color: CupertinoColors.white,
+//    child: DefaultTextStyle(
+//      style: const TextStyle(
+//        color: CupertinoColors.black,
+//        fontSize: 22.0,
+//      ),
+//      child: GestureDetector(
+//        // Blocks taps from propagating to the modal sheet and popping.
+//        onTap: () {},
+//        child: SafeArea(
+//          top: false,
+//          child: picker,
+//        ),
+//      ),
+//    ),
+//  );
+//}
 
 class AddPdfPage extends StatefulWidget {
   final int isNew;
@@ -32,8 +56,9 @@ class FileController {
 
   static saveLocalImage(File image,String id) async {
     final String path = await localPath;
-    final imagePath = '$path/image$id.png';
+    final imagePath = '$path/image$id.pdf';
     print(imagePath);
+    await File(imagePath).writeAsBytes(await image.readAsBytes());
 
     return imagePath;
   }
@@ -362,7 +387,26 @@ class _AddPdfPageState extends State<AddPdfPage> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          txtBox(contents.textFieldMap[ContentsLabel.file], ContentsLabel.hintLabelMap[ContentsLabel.file], ContentsLabel.file),
+//                          txtBox(contents.textFieldMap[ContentsLabel.file], ContentsLabel.hintLabelMap[ContentsLabel.file], ContentsLabel.file),
+                      TextField(
+                        controller: contents.textFieldMap[ContentsLabel.file],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny(RegExp("/")),
+                        ],
+                        enabled: true,
+                        maxLengthEnforced: false,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          hintText: ContentsLabel.hintLabelMap[ContentsLabel.file],
+                          labelText: ContentsLabel.file,
+                        ),
+                      ),
                         ]
                     ),
                   ),
@@ -391,36 +435,44 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  提出日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("提出日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.firstDate == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.firstDate),
-                                Container(
-                                    width: 10
+                                Expanded(
+                                  flex: 3,
+                                  child: Center(
+                                    child: allData.firstDate == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                        : Text(allData.firstDate),
+                                  )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
-                                      setState(() {
-                                        allData.firstDate = DateFormat.yMMMMd("ja_JP").format(selected);
-                                      });
-                                    }
-                                  },
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.firstDate = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                              },
+                                            currentTime: allData.firstDate == null ? now : allData.firstDate,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                      ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
                                   icon: Icon(Icons.backspace),
                                   onPressed: ()async{
                                     setState(() {
@@ -428,6 +480,72 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                     });
                                   },
                                 ),
+                                ),
+//                                Text("  提出日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.firstDate == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.firstDate),
+//                                Container(
+//                                    width: 10
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: (){
+//                                    DatePicker.showDatePicker(context,
+//                                        showTitleActions: true,
+//                                        minTime: DateTime(now.year-1, 1, 1),
+//                                        maxTime: DateTime(now.year+5, 12, 31),
+//                                        onConfirm: (date) {
+//                                          setState(() {
+//                                            allData.firstDate = DateFormat.yMMMMd("ja_JP").format(date);
+//                                          });
+//                                        },
+//                                        currentTime: now,
+//                                        locale: LocaleType.jp
+//                                    );
+////                                    showCupertinoModalPopup<void>(
+////                                      context: context,
+////                                      builder: (BuildContext context) {
+////                                        return _buildBottomPicker(
+////                                          CupertinoDatePicker(
+////                                            mode: CupertinoDatePickerMode.date,
+////                                            initialDateTime: now,
+////                                            onDateTimeChanged: (DateTime selected) {
+////                                              if (mounted) {
+////                                                setState(() => allData.firstDate = DateFormat.yMMMMd("ja_JP").format(selected));
+////                                              }
+////                                            },
+////                                          ),
+////                                        );
+////                                      },
+////                                    );
+////                                    final DateTime selected = await showDatePicker(
+////                                      context: context,
+////                                      locale: const Locale("ja"),
+////                                      initialDate: now,
+////                                      firstDate: DateTime(now.year-1),
+////                                      lastDate: DateTime(now.year+5),
+////                                    );
+////                                    if (selected != null) {
+////                                      setState(() {
+////                                        allData.firstDate = DateFormat.yMMMMd("ja_JP").format(selected);
+////                                      });
+////                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.firstDate = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -540,7 +658,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
                         children: <Widget>[
                           Text("メンバー１",style: TextStyle(fontWeight: FontWeight.bold),),
                           Padding(padding: EdgeInsets.all(10),),
-                          txtBox(contents.textFieldMap[ContentsLabel.id1Role], ContentsLabel.hintLabelMap[ContentsLabel.id1Role], ContentsLabel.id1Role),
+//                          txtBox(contents.textFieldMap[ContentsLabel.id1Role], ContentsLabel.hintLabelMap[ContentsLabel.id1Role], ContentsLabel.id1Role),
+                      TextField(
+                        maxLength: 2,
+                        controller: contents.textFieldMap[ContentsLabel.id1Role],
+                        enabled: true,
+                        maxLengthEnforced: false,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          hintText: ContentsLabel.hintLabelMap[ContentsLabel.id1Role],
+                          labelText: ContentsLabel.id1Role,
+                        ),
+                      ),
                           Padding(padding: EdgeInsets.all(10),),
                           txtBox(contents.textFieldMap[ContentsLabel.id1Name], ContentsLabel.hintLabelMap[ContentsLabel.id1Name], ContentsLabel.id1Name),
                           Padding(padding: EdgeInsets.all(10),),
@@ -609,43 +744,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text("生年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.id1Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.id1Birth),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.id1Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.id1Birth),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-110),
-                                      lastDate: DateTime(now.year+1),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 130, 1, 1),
+                                            maxTime: now,
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.id1Birth = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.id1Birth == null ? now : allData.id1Birth,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.id1Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+                                        allData.id1Birth = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.id1Birth = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.id1Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.id1Birth),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-110),
+//                                      lastDate: DateTime(now.year+1),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.id1Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.id1Birth = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -680,7 +861,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
                           Padding(padding: EdgeInsets.all(10),),
                           Text("メンバー２",style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
                           Padding(padding: EdgeInsets.all(10),),
-                          txtBox(contents.textFieldMap[ContentsLabel.id2Role], ContentsLabel.hintLabelMap[ContentsLabel.id2Role], ContentsLabel.id2Role),
+//                          txtBox(contents.textFieldMap[ContentsLabel.id2Role], ContentsLabel.hintLabelMap[ContentsLabel.id2Role], ContentsLabel.id2Role),
+                          TextField(
+                            maxLength: 2,
+                            controller: contents.textFieldMap[ContentsLabel.id2Role],
+                            enabled: true,
+                            maxLengthEnforced: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue),
+                              ),
+                              hintText: ContentsLabel.hintLabelMap[ContentsLabel.id2Role],
+                              labelText: ContentsLabel.id2Role,
+                            ),
+                          ),
                           Padding(padding: EdgeInsets.all(10),),
                           txtBox(contents.textFieldMap[ContentsLabel.id2Name], ContentsLabel.hintLabelMap[ContentsLabel.id2Name], ContentsLabel.id2Name),
                           Padding(padding: EdgeInsets.all(10),),
@@ -749,43 +947,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text("生年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.id2Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.id2Birth),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.id2Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.id2Birth),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-110),
-                                      lastDate: DateTime(now.year+1),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 130, 1, 1),
+                                            maxTime: now,
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.id2Birth = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.id2Birth == null ? now : allData.id2Birth,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.id2Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+                                        allData.id2Birth = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.id2Birth = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.id2Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.id2Birth),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-110),
+//                                      lastDate: DateTime(now.year+1),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.id2Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.id2Birth = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -820,7 +1064,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
                           Padding(padding: EdgeInsets.all(10),),
                           Text("メンバー3",style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
                           Padding(padding: EdgeInsets.all(10),),
-                          txtBox(contents.textFieldMap[ContentsLabel.id3Role], ContentsLabel.hintLabelMap[ContentsLabel.id3Role], ContentsLabel.id3Role),
+//                          txtBox(contents.textFieldMap[ContentsLabel.id3Role], ContentsLabel.hintLabelMap[ContentsLabel.id3Role], ContentsLabel.id3Role),
+                          TextField(
+                            maxLength: 2,
+                            controller: contents.textFieldMap[ContentsLabel.id3Role],
+                            enabled: true,
+                            maxLengthEnforced: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue),
+                              ),
+                              hintText: ContentsLabel.hintLabelMap[ContentsLabel.id3Role],
+                              labelText: ContentsLabel.id3Role,
+                            ),
+                          ),
                           Padding(padding: EdgeInsets.all(10),),
                           txtBox(contents.textFieldMap[ContentsLabel.id3Name], ContentsLabel.hintLabelMap[ContentsLabel.id3Name], ContentsLabel.id3Name),
                           Padding(padding: EdgeInsets.all(10),),
@@ -890,43 +1151,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text("生年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.id3Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.id3Birth),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.id3Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.id3Birth),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-110),
-                                      lastDate: DateTime(now.year+1),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 130, 1, 1),
+                                            maxTime: now,
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.id3Birth = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.id3Birth == null ? now : allData.id3Birth,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.id3Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+                                        allData.id3Birth = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.id3Birth = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.id3Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.id3Birth),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-110),
+//                                      lastDate: DateTime(now.year+1),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.id3Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.id3Birth = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -961,7 +1268,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
                           Padding(padding: EdgeInsets.all(10),),
                           Text("メンバー4",style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
                           Padding(padding: EdgeInsets.all(10),),
-                          txtBox(contents.textFieldMap[ContentsLabel.id4Role], ContentsLabel.hintLabelMap[ContentsLabel.id4Role], ContentsLabel.id4Role),
+//                          txtBox(contents.textFieldMap[ContentsLabel.id4Role], ContentsLabel.hintLabelMap[ContentsLabel.id4Role], ContentsLabel.id4Role),
+                          TextField(
+                            maxLength: 2,
+                            controller: contents.textFieldMap[ContentsLabel.id4Role],
+                            enabled: true,
+                            maxLengthEnforced: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue),
+                              ),
+                              hintText: ContentsLabel.hintLabelMap[ContentsLabel.id4Role],
+                              labelText: ContentsLabel.id4Role,
+                            ),
+                          ),
                           Padding(padding: EdgeInsets.all(10),),
                           txtBox(contents.textFieldMap[ContentsLabel.id4Name], ContentsLabel.hintLabelMap[ContentsLabel.id4Name], ContentsLabel.id4Name),
                           Padding(padding: EdgeInsets.all(10),),
@@ -1030,43 +1354,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text("生年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.id4Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.id4Birth),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.id4Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.id4Birth),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-110),
-                                      lastDate: DateTime(now.year+1),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 130, 1, 1),
+                                            maxTime: now,
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.id4Birth = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.id4Birth == null ? now : allData.id4Birth,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.id4Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+                                        allData.id4Birth = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.id4Birth = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.id4Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.id4Birth),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-110),
+//                                      lastDate: DateTime(now.year+1),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.id4Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.id4Birth = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1101,7 +1471,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
                           Padding(padding: EdgeInsets.all(10),),
                           Text("メンバー5",style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
                           Padding(padding: EdgeInsets.all(10),),
-                          txtBox(contents.textFieldMap[ContentsLabel.id5Role], ContentsLabel.hintLabelMap[ContentsLabel.id5Role], ContentsLabel.id5Role),
+//                          txtBox(contents.textFieldMap[ContentsLabel.id5Role], ContentsLabel.hintLabelMap[ContentsLabel.id5Role], ContentsLabel.id5Role),
+                          TextField(
+                            maxLength: 2,
+                            controller: contents.textFieldMap[ContentsLabel.id5Role],
+                            enabled: true,
+                            maxLengthEnforced: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue),
+                              ),
+                              hintText: ContentsLabel.hintLabelMap[ContentsLabel.id5Role],
+                              labelText: ContentsLabel.id5Role,
+                            ),
+                          ),
                           Padding(padding: EdgeInsets.all(10),),
                           txtBox(contents.textFieldMap[ContentsLabel.id5Name], ContentsLabel.hintLabelMap[ContentsLabel.id5Name], ContentsLabel.id5Name),
                           Padding(padding: EdgeInsets.all(10),),
@@ -1170,43 +1557,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text("生年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.id5Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
-                                    : Text(allData.id5Birth),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.id5Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.id5Birth),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-110),
-                                      lastDate: DateTime(now.year+1),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 130, 1, 1),
+                                            maxTime: now,
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.id5Birth = DateFormat.yMMMMd("ja_JP").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.id5Birth == null ? now : allData.id5Birth,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.id5Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+                                        allData.id5Birth = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.id5Birth = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  生年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.id5Birth == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+//                                    : Text(allData.id5Birth),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-110),
+//                                      lastDate: DateTime(now.year+1),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.id5Birth = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.id5Birth = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1267,43 +1700,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                 ),
                                 child: Row(
                                   children: <Widget>[
-                                    Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                    Container(
-                                      width: 30,
+                                    Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                      ),
                                     ),
-                                    allData.start == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                        : Text(allData.start),
-                                    Container(
-                                      width: 10,
+                                    Expanded(
+                                        flex: 3,
+                                        child: Center(
+                                          child: allData.start == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                              : Text(allData.start),
+                                        )
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.date_range),
-                                      onPressed: ()async{
-                                        final DateTime selected = await showDatePicker(
-                                          context: context,
-                                          locale: const Locale("ja"),
-                                          initialDate: now,
-                                          firstDate: DateTime(now.year-1),
-                                          lastDate: DateTime(now.year+5),
-                                        );
-                                        if (selected != null) {
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
+                                          icon: Icon(Icons.date_range),
+                                          onPressed: () {
+                                            DatePicker.showDatePicker(
+                                                context,
+                                                showTitleActions: true,
+                                                minTime: DateTime(now.year - 1, 1, 1),
+                                                maxTime: DateTime(now.year + 5, 12, 31),
+                                                onConfirm: (date) {
+                                                  setState(() {
+                                                    allData.start = DateFormat.yMMMMd("ja_JP").format(date);
+                                                  });
+                                                },
+                                                currentTime: allData.start == null ? now : allData.start,
+                                                locale: LocaleType.jp
+                                            );
+                                          }
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child:
+                                      IconButton(
+                                        icon: Icon(Icons.backspace),
+                                        onPressed: ()async{
                                           setState(() {
-                                            allData.start = DateFormat.yMMMMd("ja_JP").format(selected);
+                                            allData.start = null;
                                           });
-                                        }
-                                      },
+                                        },
+                                      ),
                                     ),
-                                    Container(
-                                      width: 5,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.backspace),
-                                      onPressed: ()async{
-                                        setState(() {
-                                          allData.start = null;
-                                        });
-                                      },
-                                    ),
+//                                    Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                    Container(
+//                                      width: 30,
+//                                    ),
+//                                    allData.start == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                        : Text(allData.start),
+//                                    Container(
+//                                      width: 10,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.date_range),
+//                                      onPressed: ()async{
+//                                        final DateTime selected = await showDatePicker(
+//                                          context: context,
+//                                          locale: const Locale("ja"),
+//                                          initialDate: now,
+//                                          firstDate: DateTime(now.year-1),
+//                                          lastDate: DateTime(now.year+5),
+//                                        );
+//                                        if (selected != null) {
+//                                          setState(() {
+//                                            allData.start = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                          });
+//                                        }
+//                                      },
+//                                    ),
+//                                    Container(
+//                                      width: 5,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.backspace),
+//                                      onPressed: ()async{
+//                                        setState(() {
+//                                          allData.start = null;
+//                                        });
+//                                      },
+//                                    ),
                                   ],
                                 ),
                               ),
@@ -1316,16 +1795,22 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                 ),
                                 child: Row(
                                   children: <Widget>[
-                                    Text("  時刻",style: TextStyle(color: Colors.black54),),
-                                    Container(
-                                      width: 30,
+                                    Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: Text("時刻",style: TextStyle(color: Colors.black54),),
+                                      ),
                                     ),
-                                    allData.sTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
-                                        : Text(allData.sTime),
-                                    Container(
-                                      width: 10,
+                                    Expanded(
+                                      flex: 3,
+                                      child: Center(
+                                        child: allData.sTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
+                                            : Text(allData.sTime),
+                                      ),
                                     ),
-                                    IconButton(
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
                                       icon: Icon(Icons.access_time),
                                       onPressed: ()async{
                                         final TimeOfDay selected = await showTimePicker(
@@ -1339,10 +1824,10 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                         }
                                       },
                                     ),
-                                    Container(
-                                      width: 5,
                                     ),
-                                    IconButton(
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
                                       icon: Icon(Icons.backspace),
                                       onPressed: ()async{
                                         setState(() {
@@ -1350,6 +1835,41 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                         });
                                       },
                                     ),
+                                    ),
+//                                    Text("  時刻",style: TextStyle(color: Colors.black54),),
+//                                    Container(
+//                                      width: 30,
+//                                    ),
+//                                    allData.sTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
+//                                        : Text(allData.sTime),
+//                                    Container(
+//                                      width: 10,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.access_time),
+//                                      onPressed: ()async{
+//                                        final TimeOfDay selected = await showTimePicker(
+//                                            context: context,
+//                                            initialTime: TimeOfDay.now()
+//                                        );
+//                                        if (selected != null) {
+//                                          setState(() {
+//                                            allData.sTime = "${selected.format(context)}";
+//                                          });
+//                                        }
+//                                      },
+//                                    ),
+//                                    Container(
+//                                      width: 5,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.backspace),
+//                                      onPressed: ()async{
+//                                        setState(() {
+//                                          allData.sTime = null;
+//                                        });
+//                                      },
+//                                    ),
                                   ],
                                 ),
                               ),
@@ -1368,43 +1888,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                 ),
                                 child: Row(
                                   children: <Widget>[
-                                    Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                    Container(
-                                      width: 30,
+                                    Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                      ),
                                     ),
-                                    allData.finish == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                        : Text(allData.finish),
-                                    Container(
-                                      width: 10,
+                                    Expanded(
+                                        flex: 3,
+                                        child: Center(
+                                          child: allData.finish == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                              : Text(allData.finish),
+                                        )
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.date_range),
-                                      onPressed: ()async{
-                                        final DateTime selected = await showDatePicker(
-                                          context: context,
-                                          locale: const Locale("ja"),
-                                          initialDate: now,
-                                          firstDate: DateTime(now.year-1),
-                                          lastDate: DateTime(now.year+5),
-                                        );
-                                        if (selected != null) {
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
+                                          icon: Icon(Icons.date_range),
+                                          onPressed: () {
+                                            DatePicker.showDatePicker(
+                                                context,
+                                                showTitleActions: true,
+                                                minTime: DateTime(now.year - 1, 1, 1),
+                                                maxTime: DateTime(now.year + 5, 12, 31),
+                                                onConfirm: (date) {
+                                                  setState(() {
+                                                    allData.finish = DateFormat.yMMMMd("ja_JP").format(date);
+                                                  });
+                                                },
+                                                currentTime: allData.finish == null ? now : allData.finish,
+                                                locale: LocaleType.jp
+                                            );
+                                          }
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child:
+                                      IconButton(
+                                        icon: Icon(Icons.backspace),
+                                        onPressed: ()async{
                                           setState(() {
-                                            allData.finish = DateFormat.yMMMMd("ja_JP").format(selected);
+                                            allData.finish = null;
                                           });
-                                        }
-                                      },
+                                        },
+                                      ),
                                     ),
-                                    Container(
-                                      width: 5,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.backspace),
-                                      onPressed: ()async{
-                                        setState(() {
-                                          allData.finish = null;
-                                        });
-                                      },
-                                    ),
+//                                    Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                    Container(
+//                                      width: 30,
+//                                    ),
+//                                    allData.finish == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                        : Text(allData.finish),
+//                                    Container(
+//                                      width: 10,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.date_range),
+//                                      onPressed: ()async{
+//                                        final DateTime selected = await showDatePicker(
+//                                          context: context,
+//                                          locale: const Locale("ja"),
+//                                          initialDate: now,
+//                                          firstDate: DateTime(now.year-1),
+//                                          lastDate: DateTime(now.year+5),
+//                                        );
+//                                        if (selected != null) {
+//                                          setState(() {
+//                                            allData.finish = DateFormat.yMMMMd("ja_JP").format(selected);
+//                                          });
+//                                        }
+//                                      },
+//                                    ),
+//                                    Container(
+//                                      width: 5,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.backspace),
+//                                      onPressed: ()async{
+//                                        setState(() {
+//                                          allData.finish = null;
+//                                        });
+//                                      },
+//                                    ),
                                   ],
                                 ),
                               ),
@@ -1417,41 +1983,82 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                 ),
                                 child: Row(
                                   children: <Widget>[
-                                    Text("  時刻",style: TextStyle(color: Colors.black54),),
-                                    Container(
-                                      width: 30,
+                                    Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: Text("時刻",style: TextStyle(color: Colors.black54),)
+                                      ),
                                     ),
-                                    allData.fTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
-                                        : Text(allData.fTime),
-                                    Container(
-                                      width: 10,
+                                    Expanded(
+                                      flex: 3,
+                                      child: Center(
+                                        child: allData.fTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
+                                            : Text(allData.fTime),
+                                      ),
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.access_time),
-                                      onPressed: ()async{
-                                        final TimeOfDay selected = await showTimePicker(
-                                            context: context,
-                                            initialTime: TimeOfDay.now()
-                                        );
-                                        if (selected != null) {
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
+                                        icon: Icon(Icons.access_time),
+                                        onPressed: ()async{
+                                          final TimeOfDay selected = await showTimePicker(
+                                              context: context,
+                                              initialTime: TimeOfDay.now()
+                                          );
+                                          if (selected != null) {
+                                            setState(() {
+                                              allData.fTime = "${selected.format(context)}";
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
+                                        icon: Icon(Icons.backspace),
+                                        onPressed: ()async{
                                           setState(() {
-                                            now = DateTime.now();
-                                            allData.fTime = "${selected.format(context)}";
+                                            allData.fTime = null;
                                           });
-                                        }
-                                      },
+                                        },
+                                      ),
                                     ),
-                                    Container(
-                                      width: 5,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.backspace),
-                                      onPressed: ()async{
-                                        setState(() {
-                                          allData.fTime = null;
-                                        });
-                                      },
-                                    ),
+//                                    Text("  時刻",style: TextStyle(color: Colors.black54),),
+//                                    Container(
+//                                      width: 30,
+//                                    ),
+//                                    allData.fTime == null ? Text("時刻を選択",style: TextStyle(color: Colors.black54))
+//                                        : Text(allData.fTime),
+//                                    Container(
+//                                      width: 10,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.access_time),
+//                                      onPressed: ()async{
+//                                        final TimeOfDay selected = await showTimePicker(
+//                                            context: context,
+//                                            initialTime: TimeOfDay.now()
+//                                        );
+//                                        if (selected != null) {
+//                                          setState(() {
+//                                            now = DateTime.now();
+//                                            allData.fTime = "${selected.format(context)}";
+//                                          });
+//                                        }
+//                                      },
+//                                    ),
+//                                    Container(
+//                                      width: 5,
+//                                    ),
+//                                    IconButton(
+//                                      icon: Icon(Icons.backspace),
+//                                      onPressed: ()async{
+//                                        setState(() {
+//                                          allData.fTime = null;
+//                                        });
+//                                      },
+//                                    ),
                                   ],
                                 ),
                               ),
@@ -1468,43 +2075,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date1 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date1),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date1 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date1),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date1 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date1 == null ? now : allData.date1,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date1 = DateFormat("M/dd").format(selected);
+                                        allData.date1 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date1 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date1 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date1),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date1 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date1 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1521,43 +2174,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date2 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date2),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date2 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date2),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date2 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date2 == null ? now : allData.date2,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date2 = DateFormat("M/dd").format(selected);
+                                        allData.date2 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date2 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date2 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date2),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date2 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date2 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1574,43 +2273,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date3 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date3),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date3 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date3),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date3 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date3 == null ? now : allData.date3,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date3 = DateFormat("M/dd").format(selected);
+                                        allData.date3 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date3 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date3 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date3),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date3 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date3 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1627,43 +2372,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date4 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date4),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date4 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date4),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date4 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date4 == null ? now : allData.date4,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date4 = DateFormat("M/dd").format(selected);
+                                        allData.date4 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date4 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date4 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date4),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date4 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date4 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1680,43 +2471,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date5 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date5),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date5 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date5),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date5 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date5 == null ? now : allData.date5,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date5 = DateFormat("M/dd").format(selected);
+                                        allData.date5 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date5 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date5 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date5),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date5 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date5 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
@@ -1733,43 +2570,89 @@ class _AddPdfPageState extends State<AddPdfPage> {
                             ),
                             child: Row(
                               children: <Widget>[
-                                Text("  年月日",style: TextStyle(color: Colors.black54),),
-                                Container(
-                                  width: 30,
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text("年月日",style: TextStyle(color: Colors.black54),),
+                                  ),
                                 ),
-                                allData.date6 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
-                                    : Text(allData.date6),
-                                Container(
-                                  width: 10,
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(
+                                      child: allData.date6 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54))
+                                          : Text(allData.date6),
+                                    )
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: ()async{
-                                    final DateTime selected = await showDatePicker(
-                                      context: context,
-                                      locale: const Locale("ja"),
-                                      initialDate: now,
-                                      firstDate: DateTime(now.year-1),
-                                      lastDate: DateTime(now.year+5),
-                                    );
-                                    if (selected != null) {
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                      icon: Icon(Icons.date_range),
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(
+                                            context,
+                                            showTitleActions: true,
+                                            minTime: DateTime(now.year - 1, 1, 1),
+                                            maxTime: DateTime(now.year + 5, 12, 31),
+                                            onConfirm: (date) {
+                                              setState(() {
+                                                allData.date6 = DateFormat("M/dd").format(date);
+                                              });
+                                            },
+                                            currentTime: allData.date6 == null ? now : allData.date6,
+                                            locale: LocaleType.jp
+                                        );
+                                      }
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                  IconButton(
+                                    icon: Icon(Icons.backspace),
+                                    onPressed: ()async{
                                       setState(() {
-                                        allData.date6 = DateFormat("M/dd").format(selected);
+                                        allData.date6 = null;
                                       });
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
-                                Container(
-                                  width: 5,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.backspace),
-                                  onPressed: ()async{
-                                    setState(() {
-                                      allData.date6 = null;
-                                    });
-                                  },
-                                ),
+//                                Text("  年月日",style: TextStyle(color: Colors.black54),),
+//                                Container(
+//                                  width: 30,
+//                                ),
+//                                allData.date6 == null ? Text("日付を選択",style: TextStyle(color: Colors.black54),)
+//                                    : Text(allData.date6),
+//                                Container(
+//                                  width: 10,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.date_range),
+//                                  onPressed: ()async{
+//                                    final DateTime selected = await showDatePicker(
+//                                      context: context,
+//                                      locale: const Locale("ja"),
+//                                      initialDate: now,
+//                                      firstDate: DateTime(now.year-1),
+//                                      lastDate: DateTime(now.year+5),
+//                                    );
+//                                    if (selected != null) {
+//                                      setState(() {
+//                                        allData.date6 = DateFormat("M/dd").format(selected);
+//                                      });
+//                                    }
+//                                  },
+//                                ),
+//                                Container(
+//                                  width: 5,
+//                                ),
+//                                IconButton(
+//                                  icon: Icon(Icons.backspace),
+//                                  onPressed: ()async{
+//                                    setState(() {
+//                                      allData.date6 = null;
+//                                    });
+//                                  },
+//                                ),
                               ],
                             ),
                           ),
