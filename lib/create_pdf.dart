@@ -7,7 +7,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 
 class CreatePdf{
-  static Future<String> createPdfA4({AllData allData,File image,int isNew}) async {
+  static Future<String> createPdfA4({AllData allData,String imagePath,int isNew}) async {
     final Document pdf = Document();
 
     Future<dynamic> getFontData() async {
@@ -17,6 +17,20 @@ class CreatePdf{
       return Font.ttf(fontData.buffer.asByteData());
     }
     var font = await getFontData();
+
+    Widget imageView(int isNew){
+      if(isNew == 1||isNew == 2){
+        return imagePath == null ? Container() : Image(PdfImage.file(
+            pdf.document,
+            bytes: File(imagePath).readAsBytesSync()),
+            width: 530,height: 340
+        );
+      }
+      else{
+        return allData.path == null ? Container()
+            : Image(PdfImage.file(pdf.document, bytes: File(allData.path).readAsBytesSync()),width: 530,height: 340);
+      }
+    }
 
     if(allData.firstAddress1==null) allData.firstAddress1 = "";
     if(allData.firstAddress2==null) allData.firstAddress2 = "";
@@ -920,13 +934,8 @@ class CreatePdf{
                   margin: const EdgeInsets.only(bottom: 0 * PdfPageFormat.mm),
                   width: 535,
                   height: 350,
-                  child:
-                  isNew == 1 ? (image == null ? Container() : Image(PdfImage.file(
-                      pdf.document,
-                      bytes: image.readAsBytesSync()),
-                      width: 530,height: 340
-                  )) : isNew == 0 ? allData.path == null ? Container() : Image(PdfImage.file(pdf.document, bytes: File(allData.path).readAsBytesSync()),width: 530,height: 340)
-                      : (image == null ? Container() : Image(PdfImage.file(pdf.document,bytes: image.readAsBytesSync()),width: 530,height: 340)),
+                  child: imageView(isNew),
+
                   decoration: const BoxDecoration(
                       border:
                       BoxBorder(bottom: true ,top: true,right: true,left: true, width: 0.5, color: PdfColors.black))

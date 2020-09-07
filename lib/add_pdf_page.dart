@@ -14,6 +14,7 @@ import 'create_pdf.dart';
 import 'db_provider.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
+
 //double _kPickerSheetHeight = 216.0;
 //Widget _buildBottomPicker(Widget picker) {
 //  return Container(
@@ -62,11 +63,21 @@ class FileController {
 
     return imagePath;
   }
+
+  static saveTmpImage(File image) async {
+    final String path = await localPath;
+    final imagePath = '$path/image.pdf';
+    print(imagePath);
+    await File(imagePath).writeAsBytes(await image.readAsBytes());
+
+    return imagePath;
+  }
 }
 
 class _AddPdfPageState extends State<AddPdfPage> {
   AllData allData = AllData();
   File _image;
+  String _imagePath;
   List<bool> _sex = [];
   DateTime now = DateTime.now();
   List<bool> expand;
@@ -75,17 +86,20 @@ class _AddPdfPageState extends State<AddPdfPage> {
   PermissionStatus _permissionPhotosStatus = PermissionStatus.undetermined;
 
 
+
   Future _getFileFromDevice() async{
     final file = await FilePicker.getFile(
       type: FileType.custom,
-      allowedExtensions: ['pdf','png','jpg'],
+      allowedExtensions: ['png','jpg'],
     );
 
     if (file == null) {
       return;
     }
+    var savePath = await FileController.saveTmpImage(file);
     setState(() {
-      _image = file;
+      _image = File(savePath);
+      _imagePath = savePath;
     });
   }
 
@@ -96,8 +110,10 @@ class _AddPdfPageState extends State<AddPdfPage> {
     if (imageFile == null) {
       return;
     }
+    var savePath = await FileController.saveTmpImage(File(imageFile.path));
     setState(() {
-      _image = File(imageFile.path);
+      _image = File(savePath);
+      _imagePath = savePath;
     });
   }
 
@@ -3007,7 +3023,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                 allData.changeText(key, value.text);
               });
               allData.date = DateFormat.yMMMMd("ja_JP").format(DateTime.now());
-              String _filePath = await CreatePdf.createPdfA4(allData:allData,image:_image,isNew: widget.isNew == 1 ? 1 : 2);
+              String _filePath = await CreatePdf.createPdfA4(allData:allData,imagePath:_imagePath,isNew: widget.isNew == 1 ? 1 : 2);
               print(_filePath);
               Navigator.of(context).push(
                   MaterialPageRoute(
