@@ -57,18 +57,22 @@ class FileController {
 
   static saveLocalImage(File image,String id) async {
     final String path = await localPath;
-    final imagePath = '$path/image$id.pdf';
+    final imagePath = '$path/image$id.jpg';
     print(imagePath);
-    await File(imagePath).writeAsBytes(await image.readAsBytes());
+    print(imagePath);
+    final byteData = await image.readAsBytes();
+
+    await File(imagePath).writeAsBytes(byteData);
 
     return imagePath;
   }
 
-  static saveTmpImage(File image) async {
+  static Future<String> saveTmpImage(File image) async {
     final String path = await localPath;
-    final imagePath = '$path/image.pdf';
+    final imagePath = '$path/image.jpg';
     print(imagePath);
-    await File(imagePath).writeAsBytes(await image.readAsBytes());
+    final byteData = await image.readAsBytes();
+    await File(imagePath).writeAsBytes(byteData);
 
     return imagePath;
   }
@@ -88,24 +92,24 @@ class _AddPdfPageState extends State<AddPdfPage> {
 
 
   Future _getFileFromDevice() async{
-    final file = await FilePicker.getFile(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['png','jpg'],
     );
 
-    if (file == null) {
+    if (result == null) {
       return;
     }
-    var savePath = await FileController.saveTmpImage(file);
+    var savePath = await FileController.saveTmpImage(File(result.files.single.path));
     setState(() {
-      _image = File(savePath);
+      _image = File(result.files.single.path);
       _imagePath = savePath;
     });
   }
 
   Future _getImageFromDevice(ImageSource source) async {
     // 撮影/選択したFileが返ってくる
-    final imageFile = await ImagePicker().getImage(source: source);
+    final PickedFile imageFile = await ImagePicker().getImage(source: source);
     // 撮影せずに閉じた場合はnullになる
     if (imageFile == null) {
       return;
@@ -3023,7 +3027,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                 allData.changeText(key, value.text);
               });
               allData.date = DateFormat.yMMMMd("ja_JP").format(DateTime.now());
-              String _filePath = await CreatePdf.createPdfA4(allData:allData,imagePath:_imagePath,isNew: widget.isNew == 1 ? 1 : 2);
+              String _filePath = await CreatePdf.createPdfA4(allData:allData,imagePath: _imagePath,isNew: widget.isNew == 1 ? 1 : 2);
               print(_filePath);
               Navigator.of(context).push(
                   MaterialPageRoute(

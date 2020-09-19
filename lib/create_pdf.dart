@@ -5,26 +5,43 @@ import 'package:mtdocs/textform.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
+import 'package:image/image.dart' as img;
 
 class CreatePdf{
+
+  static Future<dynamic> getFontData() async {
+    final ByteData bytes = await rootBundle.load('assets/fonts/ipaexm.ttf');
+    final Uint8List fontData = bytes.buffer.asUint8List();
+
+    return Font.ttf(fontData.buffer.asByteData());
+  }
+
   static Future<String> createPdfA4({AllData allData,String imagePath,int isNew}) async {
     final Document pdf = Document();
 
-    Future<dynamic> getFontData() async {
-      final ByteData bytes = await rootBundle.load('assets/fonts/ipaexm.ttf');
-      final Uint8List fontData = bytes.buffer.asUint8List();
-
-      return Font.ttf(fontData.buffer.asByteData());
-    }
     var font = await getFontData();
 
+    // Uint8List image = File(imagePath).readAsBytesSync();
+
     Widget imageView(int isNew){
+      // img.Image imgImage = img.decodeImage(image);
+      // img.Image smallImage = img.copyResize(imgImage,width: 200);
+
       if(isNew == 1||isNew == 2){
-        return imagePath == null ? Container() : Image(PdfImage.file(
+        return imagePath == null ? Container() :
+        Image(PdfImage.file(
             pdf.document,
             bytes: File(imagePath).readAsBytesSync()),
             width: 530,height: 340
         );
+        // Image(
+        //   PdfImage(
+        //     pdf.document,
+        //     image: smallImage.data.buffer.asUint8List(),
+        //       width: 530,
+        //       height: 340
+        //   ),
+        // );
       }
       else{
         return allData.path == null ? Container()
@@ -934,7 +951,7 @@ class CreatePdf{
                   margin: const EdgeInsets.only(bottom: 0 * PdfPageFormat.mm),
                   width: 535,
                   height: 350,
-                  child: imageView(isNew),
+                   child: imageView(isNew),
 
                   decoration: const BoxDecoration(
                       border:
