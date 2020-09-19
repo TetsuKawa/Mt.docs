@@ -15,6 +15,7 @@ import 'db_provider.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 
+<<<<<<< HEAD
 //double _kPickerSheetHeight = 216.0;
 //Widget _buildBottomPicker(Widget picker) {
 //  return Container(
@@ -37,6 +38,8 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 //    ),
 //  );
 //}
+=======
+>>>>>>> master
 
 class AddPdfPage extends StatefulWidget {
   final int isNew;
@@ -57,6 +60,7 @@ class FileController {
 
   static saveLocalImage(File image,String id) async {
     final String path = await localPath;
+<<<<<<< HEAD
     final imagePath = '$path/image$id.jpg';
     print(imagePath);
     print(imagePath);
@@ -70,6 +74,9 @@ class FileController {
   static Future<String> saveTmpImage(File image) async {
     final String path = await localPath;
     final imagePath = '$path/image.jpg';
+=======
+    final imagePath = '$path/image$id.png';
+>>>>>>> master
     print(imagePath);
     final byteData = await image.readAsBytes();
     await File(imagePath).writeAsBytes(byteData);
@@ -1151,7 +1158,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             _sex[4] = !_sex[5];
                                           }
                                           else{
-                                            allData.id3Sex = "男";
+                                            allData.id3Sex = null;
                                           }
                                         });
                                       },
@@ -2120,7 +2127,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date1 = DateFormat("M/dd").format(date);
+                                                allData.date1 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date1 == null ? now : allData.date1,
@@ -2219,7 +2226,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date2 = DateFormat("M/dd").format(date);
+                                                allData.date2 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date2 == null ? now : allData.date2,
@@ -2318,7 +2325,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date3 = DateFormat("M/dd").format(date);
+                                                allData.date3 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date3 == null ? now : allData.date3,
@@ -2417,7 +2424,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date4 = DateFormat("M/dd").format(date);
+                                                allData.date4 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date4 == null ? now : allData.date4,
@@ -2516,7 +2523,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date5 = DateFormat("M/dd").format(date);
+                                                allData.date5 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date5 == null ? now : allData.date5,
@@ -2615,7 +2622,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                             maxTime: DateTime(now.year + 5, 12, 31),
                                             onConfirm: (date) {
                                               setState(() {
-                                                allData.date6 = DateFormat("M/dd").format(date);
+                                                allData.date6 = DateFormat("M/d").format(date);
                                               });
                                             },
                                             currentTime: allData.date6 == null ? now : allData.date6,
