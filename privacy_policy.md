@@ -6,3 +6,4 @@
 ・[Google広告ポリシー](https://policies.google.com/technologies/ads?hl=ja)
 
 上記以外の個人情報及びGPS,Bluetooth機能等は一切利用しておりません。
+
