@@ -60,7 +60,7 @@ class _PdfViewPageState extends State<PdfViewPage> {
 //                bytes.buffer.asUint8List(),
 //                "image/pdf"
 //            );
-            Share.shareFiles([widget.filePath], text: 'aaa',subject: 'bbb');
+            Share.shareFiles([widget.filePath], text: widget.data.file,subject: '');
           },
         ),
 
