@@ -25,7 +25,7 @@ dependencies:
     sdk: flutter
 
   pdf: ^1.10.1
-  flutter_pdfview: ^1.0.0+10
+  flutter_pdfview: ^1.0.3+5
   path_provider: ^1.6.11
   flutter_localizations:
     sdk: flutter
@@ -37,6 +37,8 @@ dependencies:
   flutter_cupertino_date_picker: ^1.0.26+2
   permission_handler: ^5.0.1+1
   flutter_datetime_picker: ^1.4.0
+  flutter_google_ad_manager: ^0.11.1
+
 
 
 

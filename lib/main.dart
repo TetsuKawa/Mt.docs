@@ -4,14 +4,69 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mtdocs/pdf_view_page.dart';
 import 'package:mtdocs/textform.dart';
-
+import 'package:flutter_google_ad_manager/flutter_google_ad_manager.dart';
 import 'add_pdf_page.dart';
 import 'create_pdf.dart';
 import 'db_provider.dart';
 
 
-void main() {
+void main() async{
   runApp(MyApp());
+}
+
+String getAppId() {
+  if (Platform.isIOS) {
+    return 'ca-app-pub-2623375152547298~3700771435';
+  } else if (Platform.isAndroid) {
+    return 'ca-app-pub-2623375152547298~5495061228';
+  }
+  return null;
+}
+
+String getBannerAdUnitId() {
+  if (Platform.isIOS) {
+    return 'ca-app-pub-2623375152547298/9406386077';
+  } else if (Platform.isAndroid) {
+    return 'ca-app-pub-2623375152547298/1555816210';
+  }
+  return null;
+}
+
+class MyTestDevices extends TestDevices {
+  static MyTestDevices _instance;
+  factory MyTestDevices() {
+    if (_instance == null) _instance = new MyTestDevices._internal();
+       return _instance;
+  }
+  MyTestDevices._internal();
+    @override
+      List<String> get values => List()..add("00008020-001431E41EF8003A ");
+  }
+
+Widget getBanner(){
+  return Center(
+    child: DFPBanner(
+      isDevelop: true,
+      testDevices: MyTestDevices(),
+      adUnitId: getBannerAdUnitId(),
+      adSize: DFPAdSize.BANNER,
+      onAdLoaded: () {
+        print('Banner onAdLoaded');
+      },
+      onAdFailedToLoad: (errorCode) {
+        print('Banner onAdFailedToLoad: errorCode:$errorCode');
+      },
+      onAdOpened: () {
+        print('Banner onAdOpened');
+      },
+      onAdClosed: () {
+        print('Banner onAdClosed');
+      },
+      onAdLeftApplication: () {
+        print('Banner onAdLeftApplication');
+      },
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -51,6 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<AllData> fileList = [];
   static List<Card> _cardList = [];
+  bool visibleLoading = false;
 
   Future<void> setDb() async{
     await DBProvider.setDb();
@@ -72,12 +128,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         dir.deleteSync(recursive: true);
                       }
                       await DBProvider.deleteFileData(fileList[i].id);
-                      setDb();
+                      await setDb();
                     }break;
 
                     case "2":{
                       await Navigator.push(context,MaterialPageRoute(builder: (context) => AddPdfPage(isNew:0 ,data: fileList[i])));
-                    }
+                      await setDb();
+                    }break;
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -97,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 await Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (context) => PdfViewPage(filePath: _filePath,data: fileList[i],isNew: 0)));
-                setDb();
+                await setDb();
               },
             ),
           )
@@ -109,9 +166,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    setDb();
     super.initState();
+    setDb();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -121,21 +181,38 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         padding: EdgeInsets.all(8),
-        child: _cardList.length != 0 ?ListView.builder(
+        child: _cardList.length != 0 ? ListView.builder(
           itemCount: _cardList.length,
           itemBuilder: (BuildContext context, int index) {
-            return _cardList[index];
+            return Column(
+              children: [
+                index % 4 == 0 ? Column(
+                  children: [
+                    getBanner(),
+                    _cardList[index],
+                  ],
+                ): _cardList[index],
+
+              ],
+            );
 
           },
         )
-            : Center(
-          child: Text("＋ボタンからファイル作成",style: TextStyle(fontSize: 20,color: Colors.black54),),
+            : Column(
+          children: [
+            Center(
+              child: getBanner(),
+            ),
+          Center(child: Text("＋ボタンからファイル作成",style: TextStyle(fontSize: 20,color: Colors.black54),)),
+          ]
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: ()async{
+
           await Navigator.push(context,MaterialPageRoute(builder: (context) => AddPdfPage(isNew:1)));
           await setDb();
+
         },
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
