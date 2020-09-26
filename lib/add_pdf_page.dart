@@ -363,6 +363,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
       });
       if(allData.path != null){
         _image = File(allData.path);
+        _imagePath = allData.path;
       }
       if(widget.data.id1Sex == "男"){
         _sex[0] = true;
@@ -2730,19 +2731,19 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                     height: 100.0,
                                     width: 100.0,
                                   ),
-                                  _image == null ? Container(
-                                      padding: EdgeInsets.all(10.0),
-                                      child: RaisedButton(
-                                        child: Text('カメラで撮影'),
-                                        onPressed: () {
-                                          if(Platform.isAndroid){
-                                            _getImageFromDevice(ImageSource.camera);
-                                          }
-                                          else if(Platform.isIOS){
-                                            _checkCameraPermissionStatus();
-                                          }
-                                        },
-                                      )) : Container(),
+                                  // _image == null ? Container(
+                                  //     padding: EdgeInsets.all(10.0),
+                                  //     child: RaisedButton(
+                                  //       child: Text('カメラで撮影'),
+                                  //       onPressed: () {
+                                  //         if(Platform.isAndroid){
+                                  //           _getImageFromDevice(ImageSource.camera);
+                                  //         }
+                                  //         else if(Platform.isIOS){
+                                  //           _checkCameraPermissionStatus();
+                                  //         }
+                                  //       },
+                                  //     )) : Container(),
                                   _image == null ? Container(
                                       padding: EdgeInsets.all(10.0),
                                       child: RaisedButton(
@@ -2771,6 +2772,7 @@ class _AddPdfPageState extends State<AddPdfPage> {
                                         onPressed: () {
                                           setState(() {
                                             _image = null;
+                                            _imagePath = null;
                                           });
                                         },
                                       )) : Container(),

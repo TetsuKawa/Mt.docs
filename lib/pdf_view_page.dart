@@ -25,6 +25,7 @@ class _PdfViewPageState extends State<PdfViewPage> {
   AllData emp = AllData();
   List<AllData> dataList;
 
+
   List<Widget> actionWidget(int index){
     if(index == 1){
       return <Widget>[
@@ -60,7 +61,8 @@ class _PdfViewPageState extends State<PdfViewPage> {
 //                bytes.buffer.asUint8List(),
 //                "image/pdf"
 //            );
-            Share.shareFiles([widget.filePath], text: widget.data.file,subject: '');
+            final Size size = MediaQuery.of(context).size;
+            Share.shareFiles([widget.filePath], text: widget.data.file,subject: '',sharePositionOrigin:  Rect.fromLTWH(0, 0, size.width, size.height / 2));
           },
         ),
 
