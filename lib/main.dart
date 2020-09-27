@@ -46,7 +46,7 @@ class MyTestDevices extends TestDevices {
 Widget getBanner(){
   return Center(
     child: DFPBanner(
-      isDevelop: true,
+      isDevelop: false,
       testDevices: MyTestDevices(),
       adUnitId: getBannerAdUnitId(),
       adSize: DFPAdSize.BANNER,

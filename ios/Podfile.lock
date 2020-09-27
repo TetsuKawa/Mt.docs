@@ -96,6 +96,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_google_ad_manager (from `.symlinks/plugins/flutter_google_ad_manager/ios`)
   - flutter_pdfview (from `.symlinks/plugins/flutter_pdfview/ios`)
+  - Google-Mobile-Ads-SDK
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
@@ -158,6 +159,6 @@ SPEC CHECKSUMS:
   sqflite: ff1d9da63c06588cc8d1faf7256d741f16989d5a
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
 
-PODFILE CHECKSUM: f6ef0f3e3a3608bf2bcd8b83d1f0ecd271a1c25e
+PODFILE CHECKSUM: cdc77797f2e95de4b8eb7dd3f877c9827b84a791
 
 COCOAPODS: 1.9.3
