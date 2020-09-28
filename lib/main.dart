@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mtdocs/ads.dart';
 import 'package:mtdocs/pdf_view_page.dart';
 import 'package:mtdocs/textform.dart';
 import 'package:flutter_google_ad_manager/flutter_google_ad_manager.dart';
@@ -10,64 +11,34 @@ import 'create_pdf.dart';
 import 'db_provider.dart';
 
 
+
 void main() async{
   runApp(MyApp());
 }
 
-String getAppId() {
-  if (Platform.isIOS) {
-    return 'ca-app-pub-2623375152547298~3700771435';
-  } else if (Platform.isAndroid) {
-    return 'ca-app-pub-2623375152547298~5495061228';
-  }
-  return null;
-}
+// String getAppId() {
+//   if (Platform.isIOS) {
+//     return 'ca-app-pub-2623375152547298~3700771435';
+//   }
+//   else if (Platform.isAndroid) {
+//     return 'ca-app-pub-2623375152547298~5495061228';
+//   }
+//   return null;
+// }
+//
+// String getBannerAdUnitId() {
+//   if (Platform.isIOS) {
+//     return 'ca-app-pub-2623375152547298/9406386077';
+//   }
+//   else if (Platform.isAndroid) {
+//     return 'ca-app-pub-2623375152547298/1555816210';
+//   }
+//   return null;
+// }
 
-String getBannerAdUnitId() {
-  if (Platform.isIOS) {
-    return 'ca-app-pub-2623375152547298/9406386077';
-  } else if (Platform.isAndroid) {
-    return 'ca-app-pub-2623375152547298/1555816210';
-  }
-  return null;
-}
 
-class MyTestDevices extends TestDevices {
-  static MyTestDevices _instance;
-  factory MyTestDevices() {
-    if (_instance == null) _instance = new MyTestDevices._internal();
-       return _instance;
-  }
-  MyTestDevices._internal();
-    @override
-      List<String> get values => List()..add("00008020-001431E41EF8003A ");
-  }
 
-Widget getBanner(){
-  return Center(
-    child: DFPBanner(
-      isDevelop: false,
-      testDevices: MyTestDevices(),
-      adUnitId: getBannerAdUnitId(),
-      adSize: DFPAdSize.BANNER,
-      onAdLoaded: () {
-        print('Banner onAdLoaded');
-      },
-      onAdFailedToLoad: (errorCode) {
-        print('Banner onAdFailedToLoad: errorCode:$errorCode');
-      },
-      onAdOpened: () {
-        print('Banner onAdOpened');
-      },
-      onAdClosed: () {
-        print('Banner onAdClosed');
-      },
-      onAdLeftApplication: () {
-        print('Banner onAdLeftApplication');
-      },
-    ),
-  );
-}
+
 
 
 
@@ -105,10 +76,45 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  // DFPBannerViewController _bannerViewController;
+  //
+  // _reload() {
+  //   _bannerViewController?.reload();
+  // }
 
   List<AllData> fileList = [];
   static List<Card> _cardList = [];
   bool visibleLoading = false;
+  Ads banner = Ads();
+
+  // Widget getBanner(){
+  //   return Center(
+  //     child: DFPBanner(
+  //       isDevelop: false,
+  //       testDevices: MyTestDevices(),
+  //       adUnitId: getBannerAdUnitId(),
+  //       adSize: DFPAdSize.BANNER,
+  //       onAdLoaded: () {
+  //         print('Banner onAdLoaded');
+  //       },
+  //       onAdFailedToLoad: (errorCode) {
+  //         print('Banner onAdFailedToLoad: errorCode:$errorCode');
+  //       },
+  //       onAdOpened: () {
+  //         print('Banner onAdOpened');
+  //       },
+  //       onAdClosed: () {
+  //         print('Banner onAdClosed');
+  //       },
+  //       onAdLeftApplication: () {
+  //         print('Banner onAdLeftApplication');
+  //       },
+  //       onAdViewCreated: (controller){
+  //         _bannerViewController = controller;
+  //       },
+  //     ),
+  //   );
+  // }
 
   Future<void> setDb() async{
     await DBProvider.setDb();
@@ -125,12 +131,34 @@ class _MyHomePageState extends State<MyHomePage> {
                 onSelected: (value)async{
                   switch(value){
                     case "1": {
-                      if(fileList[i].path != null){
-                        final dir = Directory(fileList[i].path);
-                        dir.deleteSync(recursive: true);
-                      }
-                      await DBProvider.deleteFileData(fileList[i].id);
-                      await setDb();
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return CupertinoAlertDialog(
+                            title: Text("消去しますか。"),
+                            content: Text("消したデータは元に戻りません"),
+                            actions: <Widget>[
+                              CupertinoDialogAction(
+                                  child: Text("消去",style: TextStyle(color: Colors.red),),
+                                  isDestructiveAction: true,
+                                  onPressed: () async{
+                                    if(fileList[i].path != null){
+                                      final dir = Directory(fileList[i].path);
+                                      dir.deleteSync(recursive: true);
+                                    }
+                                    await DBProvider.deleteFileData(fileList[i].id);
+                                    await setDb();
+                                    Navigator.pop(context);
+                                  }
+                              ),
+                              CupertinoDialogAction(
+                                child: Text("キャンセル"),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }break;
 
                     case "2":{
@@ -182,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Container(
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.symmetric(horizontal: 8),
         child: _cardList.length != 0 ? ListView.builder(
           itemCount: _cardList.length,
           itemBuilder: (BuildContext context, int index) {
@@ -190,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 index % 4 == 0 ? Column(
                   children: [
-                    getBanner(),
+                    // banner.getBanner(),
                     _cardList[index],
                   ],
                 ): _cardList[index],
@@ -202,9 +230,9 @@ class _MyHomePageState extends State<MyHomePage> {
         )
             : Column(
           children: [
-            Center(
-              child: getBanner(),
-            ),
+            // Center(
+            //   child: banner.getBanner(),
+            // ),
           Center(child: Text("＋ボタンからファイル作成",style: TextStyle(fontSize: 20,color: Colors.black54),)),
           ]
         ),

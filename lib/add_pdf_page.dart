@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_google_ad_manager/ad_size.dart';
+import 'package:flutter_google_ad_manager/banner.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mtdocs/ads.dart';
 import 'package:mtdocs/pdf_view_page.dart';
 import 'package:mtdocs/textform.dart';
 import 'package:path_provider/path_provider.dart';
@@ -93,7 +96,12 @@ class _AddPdfPageState extends State<AddPdfPage> {
   ContentsLabel contents = ContentsLabel();
   PermissionStatus _permissionCameraStatus = PermissionStatus.undetermined;
   PermissionStatus _permissionPhotosStatus = PermissionStatus.undetermined;
-
+  Ads banner = Ads();
+  // DFPBannerViewController _bannerViewController;
+  //
+  // _reload() {
+  //   _bannerViewController?.reload();
+  // }
 
 
   Future _getFileFromDevice() async{
@@ -286,6 +294,34 @@ class _AddPdfPageState extends State<AddPdfPage> {
     );
   }
 
+  // Widget getBanner(){
+  //   return Center(
+  //     child: DFPBanner(
+  //       isDevelop: false,
+  //       testDevices: MyTestDevices(),
+  //       adUnitId: getBannerAdUnitId(),
+  //       adSize: DFPAdSize.BANNER,
+  //       onAdLoaded: () {
+  //         print('Banner onAdLoaded');
+  //       },
+  //       onAdFailedToLoad: (errorCode) {
+  //         print('Banner onAdFailedToLoad: errorCode:$errorCode');
+  //       },
+  //       onAdOpened: () {
+  //         print('Banner onAdOpened');
+  //       },
+  //       onAdClosed: () {
+  //         print('Banner onAdClosed');
+  //       },
+  //       onAdLeftApplication: () {
+  //         print('Banner onAdLeftApplication');
+  //       },
+  //       onAdViewCreated: (controller){
+  //         _bannerViewController = controller;
+  //       },
+  //     ),
+  //   );
+  // }
 
   Widget _checkBox(String text, bool check){
     return Column(
@@ -317,6 +353,8 @@ class _AddPdfPageState extends State<AddPdfPage> {
 
   Widget txtBox(TextEditingController controller,String hint, String label){
     return TextField(
+      maxLines: 20,
+      minLines: 1,
       controller: controller,
       enabled: true,
       maxLengthEnforced: false,
@@ -408,10 +446,10 @@ class _AddPdfPageState extends State<AddPdfPage> {
         ),
         body: Container(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(5),
+            padding: EdgeInsets.symmetric(horizontal: 5),
             child: Column(
               children: [
-                getBanner(),
+                // banner.getBanner(),
                 ExpansionPanelList(
                   expansionCallback: (int index, bool isExpanded) {
                     setState(() {
@@ -433,6 +471,8 @@ class _AddPdfPageState extends State<AddPdfPage> {
 //                          txtBox(contents.textFieldMap[ContentsLabel.file], ContentsLabel.hintLabelMap[ContentsLabel.file], ContentsLabel.file),
                           TextField(
                             controller: contents.textFieldMap[ContentsLabel.file],
+                            maxLines: 20,
+                            minLines: 1,
                             inputFormatters: [
                               FilteringTextInputFormatter.deny(RegExp("/")),
                             ],

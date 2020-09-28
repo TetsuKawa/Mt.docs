@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:share/share.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -70,12 +71,35 @@ class _PdfViewPageState extends State<PdfViewPage> {
           onSelected: (value)async{
             switch(value){
               case "1": {
-                if(widget.data.path != null){
-                  final dir = Directory(widget.data.path);
-                  dir.deleteSync(recursive: true);
-                }
-                await DBProvider.deleteFileData(widget.data.id);
-                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return CupertinoAlertDialog(
+                      title: Text("消去しますか。"),
+                      content: Text("消したデータは元に戻りません"),
+                      actions: <Widget>[
+                        CupertinoDialogAction(
+                            child: Text("消去",style: TextStyle(color: Colors.red),),
+                            isDestructiveAction: true,
+                            onPressed: () async{
+
+                              if(widget.data.path != null){
+                                final dir = Directory(widget.data.path);
+                                dir.deleteSync(recursive: true);
+                              }
+                              await DBProvider.deleteFileData(widget.data.id);
+                              Navigator.of(context).pop();
+                              Navigator.pop(context);
+                            }
+                        ),
+                        CupertinoDialogAction(
+                          child: Text("キャンセル"),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    );
+                  },
+                );
               }break;
 
               case "2":{
